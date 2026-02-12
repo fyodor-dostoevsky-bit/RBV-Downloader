@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [project.scripts]
-rbv-dl = "rbv-dl:main"
+rbv-dl = "rbv_downloader:main"
 
 [tool.setuptools]
-py-modules = ["rbv-dl"]
+py-modules = ["rbv_downloader"]
