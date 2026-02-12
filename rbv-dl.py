@@ -77,9 +77,9 @@ class RBVDownloader:
             with open(output_filename, "wb") as f:
                 f.write(img2pdf.convert(images))
 
-        log(f"PDF file created: {output_filename}", "success")
-    except Exception as e:
-        log(f"Failed to create PDF file: {e}", "error")
+            log(f"PDF file created: {output_filename}", "success")
+        except Exception as e:
+            log(f"Failed to create PDF file: {e}", "error")
 
     async def run(self):
         clear_screen()
