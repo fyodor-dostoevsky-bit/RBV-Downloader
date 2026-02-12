@@ -13,7 +13,7 @@
 Before installing, you **must** have Python installed on your computer.
 
 1.  **Download Python**: [python.org/downloads](https://www.python.org/downloads/)
-2.  **Important**: When installing, make sure to check the box **"Add Python to PATH"**. (Ini wajib, kalau lupa nanti error).
+2.  **Important**: When installing, make sure to check the box **"Add Python to PATH"**. (This is mandatory, if you forget it will result in an error).
 
 ---
 
