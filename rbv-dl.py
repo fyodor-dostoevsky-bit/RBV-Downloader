@@ -100,7 +100,7 @@ class RBVDownloader:
         self.output_dir = temp_dir
 
         async with async_playwright() as p:
-            log(f"Launch {self.browser_type}...", "info")
+            log(f"Launch...", "info")
             
             browser = await p.chromium.launch(
                 headless=True,
