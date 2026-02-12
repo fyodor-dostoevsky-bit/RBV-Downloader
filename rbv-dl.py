@@ -144,9 +144,9 @@ class RBVDownloader:
                     await page.click('input[value="Yes"]')
                 except: pass
 
-                log("Memuat modul...", "info")
+                log("Loading modul...", "info")
                 await page.wait_for_selector('.flowpaper_lblTotalPages', state="attached", timeout=60000)
-                log("Login Sukses! Modul terbuka.", "success")
+                log("Login Successful! Modul open.", "success")
 
             except Exception as e:
                 log(f"Login Error: {e}", "error")
@@ -170,7 +170,7 @@ class RBVDownloader:
                 await browser.close()
                 return
             
-            log(f"Dapat {len(daftar_bab)} Bab.", "success")
+            log(f"Found {len(daftar_bab)} Bab.", "success")
             page.on("response", self.intercept_response)
 
             for i, bab in enumerate(daftar_bab):
