@@ -29,7 +29,7 @@ No need to open code editors. Just use the Command Prompt.
 2.  Type `cmd` and press **Enter**.
 3.  Copy and paste this command into the black box, then press Enter:
     ```cmd
-    pip install rbv-dl
+    pip install rbv-ut-downloader
     ```
 4.  After that finishes, run this command to install the browser engine:
     ```cmd
@@ -44,7 +44,7 @@ No need to open code editors. Just use the Command Prompt.
 2.  Type `Terminal` and press **Enter**.
 3.  Paste this command and hit Enter:
     ```bash
-    pip3 install rbv-dl
+    pip3 install rbv-ut-downloader
     ```
 4.  Then, install the required browser:
     ```bash
@@ -57,11 +57,11 @@ You know what to do. Use `pip`, `pipx`, or your preferred package manager.
 
 ```bash
 # Recommended: install via pipx to keep your system clean
-pipx install rbv-dl
+pipx install rbv-ut-downloader
 playwright install chromium
 
 # Or standard pip
-pip install rbv-dl
+pipx install rbv-ut-downloader
 playwright install chromium
 ```
 ### How to Use
