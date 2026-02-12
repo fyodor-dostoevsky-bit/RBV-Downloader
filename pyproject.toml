@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rbv-ut-downloader"
+version = "0.1.0"
+description = "A simple Python-based tool to automate module downloads from Universitas Terbuka's Virtual Reading Room (RBV)."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "fyodor-dostoevsky-bit", email = "prabowotanpabiji6@gmail.com" }
+]
+keywords = ["ut", "downloader", "rbv", "automation", "cli"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "playwright>=1.40.0",
+    "img2pdf>=0.5.0",
+]
+
+[project.scripts]
+rbv-dl = "rbv-dl:main"
+
+[tool.setuptools]
+py-modules = ["rbv-dl"]
