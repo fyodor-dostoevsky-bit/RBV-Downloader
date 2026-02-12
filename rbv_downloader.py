@@ -3,7 +3,7 @@ import os
 import shutil
 import time
 import re
-import img2pdf #ganti PIL
+import img2pdf 
 from getpass import getpass
 from playwright.async_api import async_playwright
 
@@ -207,7 +207,7 @@ class RBVDownloader:
             shutil.rmtree(temp_dir)
             log(f"\nSuccessful! File dir: {kode_mk}", "success")
 
-if __name__ == "__main__":
+def main():
     try:
         downloader = RBVDownloader()
         asyncio.run(downloader.run())
@@ -215,3 +215,6 @@ if __name__ == "__main__":
         print("\nBye.")
     except Exception as e:
         print(f"\nError: {e}")
+        
+if __name__ == "__main__":
+    main()
