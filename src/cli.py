@@ -214,7 +214,7 @@ def main():
     except KeyboardInterrupt:
         print("\nBye.")
     except Exception as e:
-        print(f"\nError{e}")
-
+        print(f"\nError: {e}")
+        
 if __name__ == "__main__":
     main()
