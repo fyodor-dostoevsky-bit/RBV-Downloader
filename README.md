@@ -1,7 +1,7 @@
 # RBV-DL (RBV UT Downloader)
 
-[![PyPI version](https://badge.fury.io/py/rbv-dl.svg)](https://badge.fury.io/py/rbv-dl)
-[![Python Versions](https://img.shields.io/pypi/pyversions/rbv-dl.svg)](https://pypi.org/project/rbv-dl/)
+![PyPI - Version](https://img.shields.io/pypi/v/rbv-ut-downloader)
+[![Python Versions](https://img.shields.io/pypi/pyversions/rbv-dl.svg)](https://pypi.org/project/rbv-ut-downloader/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **RBV-DL** is a powerful CLI tool to automate downloading modules from *Universitas Terbuka's Virtual Reading Room* (RBV). It handles login, scans chapters, captures pages in high quality, and stitches them into a readable PDF.
