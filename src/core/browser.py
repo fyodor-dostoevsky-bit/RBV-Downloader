@@ -1,8 +1,6 @@
 import asyncio
 import os
 import shutil
-import time
-import re
 from getpass import getpass
 from playwright.async_api import async_playwright
 
