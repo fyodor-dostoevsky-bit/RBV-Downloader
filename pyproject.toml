@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rbv-ut-downloader"
-version = "0.1.0"
+version = "0.1.2"
 description = "A simple Python-based tool to automate module downloads from Universitas Terbuka's Virtual Reading Room (RBV)."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -20,10 +20,12 @@ classifiers = [
 dependencies = [
     "playwright>=1.40.0",
     "img2pdf>=0.5.0",
+    "httpx>=0.25.0",
 ]
 
 [project.scripts]
-rbv-dl = "rbv_downloader:main"
+rbv-dl = "main:main_entry"
 
 [tool.setuptools]
-py-modules = ["rbv_downloader"]
+packages = ["core"]
+py-modules = ["main"]
