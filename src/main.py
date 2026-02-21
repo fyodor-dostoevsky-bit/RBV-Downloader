@@ -139,63 +139,47 @@ class RBVEngine:
                 
             await browser.close()
             
-        log.log(f"✅ Found {len(chapters)} Chapters. Switching to Turbo Engine.", "success")
-        ## Here
-        ## Here
-        ## Here
-            try: await page.wait_for_selector("a[href*='.pdf']", timeout=10000)
-            except: pass
-
-            daftar_bab = await page.evaluate("""() => {
-                const links = Array.from(document.querySelectorAll("a[href*='.pdf']"));
-                return links.map(a => ({
-                    label: a.innerText.trim() || a.href.split('/').pop(),
-                    file: a.href.split('/').pop()
-                }));
-            }""")
-
-            if not daftar_bab:
-                log("Failed to read.", "error")
-                await browser.close()
-                return
+        log.log(f"Found {len(chapters)} Chapters. Switching to Turbo Engine.", "success")
             
-            log(f"Found {len(daftar_bab)} Bab.", "success")
-            page.on("response", self.intercept_response)
+            downloader = RBVDownloader(self.cookies)
+            downloader.resolution = "800" # HD
+        
+            for id, bab in enumerate(chapters):
+                doc_id = bab['id']
+                log.log(f"\n Processing: {bab['label']} (ID: {doc_id})", "info")
 
-            for i, bab in enumerate(daftar_bab):
-                log(f"\n Bab {i+1}: {bab['label']}", "info")
-                self.current_bab_index = i
-                
-                try: await page.evaluate(f"document.querySelector(`a[href*='{bab['file']}']`).click()")
-                except: continue
-                
-                await asyncio.sleep(4) 
-                
-                try:
-                    total_txt = await page.inner_text(".flowpaper_lblTotalPages")
-                    total_hal = int(re.search(r'\d+', total_txt).group())
-                except:
-                    total_hal = 0
-                
-                log(f" Hal: {total_hal}", "info")
-                
-                for j in range(1, total_hal + 1):
-                    try: await page.evaluate(f"$FlowPaper('documentViewer').gotoPage({j}); $FlowPaper('documentViewer').setZoom(3.0);")
-                    except: pass
-                    
-                    await asyncio.sleep(1.5) 
-                    
-                    if not await self.wait_for_image(page, i, j, timeout=5):
-                        log(f"Timeout Hal {j}", "warn")
+                bab_dir = os.path.join(self.temp_dir, doc_id)
+                if not os.path.exists(bab_dir):
+                    os.makedirs(bab_dir)
 
-            await browser.close()
+                # Parallel Download Logic
+                concurrency = 5
+                max_page_guess = 100
+                consecutive_errors = 0
+                total_download = 0
 
-            output_name = os.path.join(base_dir, f"{kode_mk}-FullBook.pdf")
-            await self.create_pdf(temp_dir, output_name)
+                async def download_task(page_num):
+                    return await downloader.download_page(doc_id, f"{kode_mk}/", page_num, bab_dir)
 
-            shutil.rmtree(temp_dir)
-            log(f"\nSuccessful! File dir: {kode_mk}", "success")
+                for i in range(1, max_pages_guess + 1 concurrency):
+                    batch_indices = range(i, min(i + concurrency, max_pages_guess + 1))
+                    tasks = [download_task(p) for p in batch_indices]
 
+                results = await asyncio.gather(*tasks)
+
+                success_count = result.count(True)
+                total_downloaded += success_count
+
+                if success_count == 0:
+                    consecutive_errors += 1
+                else:
+                    consecutive_errors = 0
+                
+                ## Here
+                ## Here
+                ## Here
+
+            
 def main():
     try:
         downloader = RBVDownloader()
