@@ -1,5 +1,6 @@
 import os
 import shutil
+from pathlib import Path
 
 def clear_screen():
     """Clear the terminal screen"""
