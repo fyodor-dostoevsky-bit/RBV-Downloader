@@ -85,6 +85,7 @@ class RBVEngine:
         print("   RBV DOWNLOADER CLI - PYTHON EDITION    ")
         print("==========================================")
 
+        # Input
         if not username:
             username = input("NIM / Email UT : ")
         if not password:
@@ -97,6 +98,7 @@ class RBVEngine:
 
         self.base_dir, self.temp_dir = prepare_directories(kode_mk)
 
+        # Login Phase
         log.log ("Initialing Secure Login squence...", "info")
         auth = RBVauth(username, password)
         auth.target_url = f"https://pustaka.ut.ac.id/reader/index.php?modul={kode_mk}"
@@ -106,6 +108,7 @@ class RBVEngine:
             log.log("Login Failed! Aborting." "error")
             return
 
+        # Metadata Phase
         chapters = []
         log.log("Fetching Module Metadata...", "info")
         
@@ -140,9 +143,10 @@ class RBVEngine:
             await browser.close()
             
         log.log(f"Found {len(chapters)} Chapters. Switching to Turbo Engine.", "success")
-            
-            downloader = RBVDownloader(self.cookies)
-            downloader.resolution = "800" # HD
+        
+        # Download Phase    
+        downloader = RBVDownloader(self.cookies)
+        downloader.resolution = "800" # HD
         
             for id, bab in enumerate(chapters):
                 doc_id = bab['id']
@@ -174,20 +178,44 @@ class RBVEngine:
                     consecutive_errors += 1
                 else:
                     consecutive_errors = 0
-                
-                ## Here
-                ## Here
-                ## Here
+                if consecutive_error >= 2:
+                    break
+            log.log(f" -> Downloaded {total_downloaded} pages.", "success")
 
-            
-def main():
+        # PDF Compiling
+        log.log("\n Compiling Full PDF...", "info")
+        all_images = []
+        for bab in chapters:
+            bab_path = os.path.join(self.temp_dir, bab['id'])
+            if os.path.exists(bab_path):
+                imgs = sorted([os.path.join(bab_path, f) for f in os.listdir(bab_path) if f.endswith(".jpg")])
+                all_images.extend(imgs)
+
+        if all_images:
+            output_pdf = os.path.join(self.base_dir, f"{kode_mk}-FullBook-HD.pdf")
+            try:
+                with open(output_pdf, "wb") as f:
+                    f.write(img2pdf.convert(all_images))
+                log.log(f"Success! File saved to: {output_pdf}", "success")
+
+                try:
+                    shutil.rmtree(self.temp_dir)
+                except
+                    pass
+            except Exception as e:
+                log.log("PDF error: {e}", "error")
+        else:
+            log.log("Zonk. No images were downloaded successfully.", "error")
+
+# --- Main Runner ---
+def main_entry():
     try:
-        downloader = RBVDownloader()
-        asyncio.run(downloader.run())
+        engine = RBVEngine()
+        asyncio.run(engine.start())
     except KeyboardInterrupt:
         print("\nBye.")
     except Exception as e:
-        print(f"\nError: {e}")
+        print(f"\nCritical Error: {e}")
         
 if __name__ == "__main__":
-    main()
+    main_entry()
