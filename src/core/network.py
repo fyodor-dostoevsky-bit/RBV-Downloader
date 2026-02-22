@@ -39,10 +39,10 @@ class RBVDownloader:
                     if "image" in content_type:
                         with open(filename, "wb") as f:
                             f.write(response.content)
-                        print(f"Page {page_num} OK.")
+                        # print(f"Page {page_num} OK.")
                         return True
                     else:
-                        print(f"Page {page_num} is not an image (End of Module?).")
+                        # print(f"Page {page_num} is not an image (End of Module?).")
                         return False
                 else:
                     print(f"Page {page_num} Error: Status {response.status_code}")
