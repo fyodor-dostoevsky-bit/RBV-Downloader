@@ -2,18 +2,17 @@ import asyncio
 import os
 import shutil
 import re
-
 from getpass import getpass
+
 import httpx
 import img2pdf
 from playwright.async_api import async_playwright
 
 try:
-    from src.utils.logger import Logger as log
-    from src.utils.helper import clear_screen, prepare_directories, collect_images_recursive
+    from utils.logger import Logger as log
 except ImportError:
     class MockLog:
-        def log(self, text, type="info")
+        def log(self, text, type="info"):
             icons = {
                 "info": "[*]",
                 "success": "[+]",
@@ -22,9 +21,17 @@ except ImportError:
             }
             icon = icons.get(type, "[?]")
             print(f"[{icon}] {text}")
-    
     log = MockLog()
-    
+try:
+    from utils.helper import clear_screen, prepare_directories, collect_images_recursive
+except ImportError:
+    def clear_screen():
+        pass
+    def prepare_directories():
+        return "output", "temp"
+    def collect_images_recursive():
+        return []
+        
 try:
     from core.auth import RBVauth          # Engine Login SSO
     from core.network import RBVDownloader # Engine Download HTTPX
