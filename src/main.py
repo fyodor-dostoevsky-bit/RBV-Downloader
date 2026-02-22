@@ -9,7 +9,7 @@ import img2pdf
 from playwright.async_api import async_playwright
 
 from utils.logger import Logger as log
-from utils.helper import clear_screen, prepare_directories, collect_images_recursive
+from utils.helper import clear_screen, prepare_directories, collect_images_recursive, format_login_id
         
 try:
     from core.auth import RBVauth          # Engine Login SSO
@@ -68,13 +68,11 @@ class RBVEngine:
         # Input
         if not username:
             username = input("NIM / Email UT : ")
+            username = format_login_id(username)
         if not password:
             password = getpass("Password       : ")
         if not kode_mk:
             kode_mk  = input("Kode MK (cth: DAPU6209): ").upper()
-
-        if "@" not in username:
-            username += "@ecampus.ut.ac.id"
 
         self.base_dir, self.temp_dir = prepare_directories(kode_mk)
 
@@ -178,7 +176,7 @@ class RBVEngine:
                 except:
                     pass
             except Exception as e:
-                log.log("PDF error: {e}", "error")
+                log.log(f"PDF error: {e}", "error")
         else:
             log.log("Zonk. No images were downloaded successfully.", "error")
 
