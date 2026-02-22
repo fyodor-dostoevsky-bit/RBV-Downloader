@@ -10,7 +10,7 @@ from playwright.async_api import async_playwright
 
 try:
     from src.utils.logger import Logger as log
-    from src.utils.helper import clear_screen, prepare_directories
+    from src.utils.helper import clear_screen, prepare_directories, collect_images_recursive
 except ImportError:
     class MockLog:
         def log(self, text, type="info")
@@ -24,16 +24,7 @@ except ImportError:
             print(f"[{icon}] {text}")
     
     log = MockLog()
-
-def clear_screen():
-    os.system('cls' if os.name == 'nt' else 'clear')
-
-def prepare_directories(kode):
-    base_dir = f"output/{kode}"
-    temp_dir = f"temp/{kode}"
-    os.makedirs(base_dir, exist_ok=True)
-    return base_dir, temp_dir
-
+    
 try:
     from core.auth import RBVauth          # Engine Login SSO
     from core.network import RBVDownloader # Engine Download HTTPX
@@ -184,12 +175,7 @@ class RBVEngine:
 
         # PDF Compiling
         log.log("\n Compiling Full PDF...", "info")
-        all_images = []
-        for bab in chapters:
-            bab_path = os.path.join(self.temp_dir, bab['id'])
-            if os.path.exists(bab_path):
-                imgs = sorted([os.path.join(bab_path, f) for f in os.listdir(bab_path) if f.endswith(".jpg")])
-                all_images.extend(imgs)
+        all_images = collect_images_recursive(self.temp_dir)
 
         if all_images:
             output_pdf = os.path.join(self.base_dir, f"{kode_mk}-FullBook-HD.pdf")
