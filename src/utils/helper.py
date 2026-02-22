@@ -16,7 +16,7 @@ def format_login_id(input_val):
 
 def prepare_directories(kode_mk: str):
     """Create output and temp folders, and clean old temp data if it exists"""
-    base_dir = Path("output") / kode_mk)
+    base_dir = Path("output") / kode_mk
     temp_dir = Path(f"temp_{kode_mk}")
     
     if temp_dir.exists():
@@ -56,8 +56,8 @@ def collect_images(folder):
 
 def collect_images_recursive(root_folder):
     """
-    Ambil semua gambar dari subfolder.
-    Berguna untuk compile PDF full book.
+    Extract all images from subfolders.
+    Useful for compiling a full PDF book.
     """
     all_images = []
 
