@@ -18,8 +18,8 @@ class Logger:
         color = "" 
         
         if type == "success": prefix = "[+]"
-        elif type == "error": prefix = "[!]"
-        elif type == "warn": prefix = "[?]"
+        elif type == "error": prefix = "[-]"
+        elif type == "warn": prefix = "[!]"
 
         full_msg = f"{prefix} {text}"
 
@@ -27,7 +27,3 @@ class Logger:
 
         if Logger._gui_callback:
             Logger._gui_callback(f"[{timestamp}] {text}", type)
-
-def log(text, type="info"):
-    Logger.log(text, type)
-
