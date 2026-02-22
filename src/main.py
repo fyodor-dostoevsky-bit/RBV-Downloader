@@ -10,6 +10,7 @@ from playwright.async_api import async_playwright
 
 from utils.logger import Logger as log
 from utils.helper import clear_screen, prepare_directories, collect_images_recursive, format_login_id
+from utils.scraper import get_chapter_list
         
 try:
     from core.auth import RBVauth          # Engine Login SSO
@@ -24,41 +25,6 @@ class RBVEngine:
         self.temp_dir = ""
         self.cookies = None
     
-    async def get_chapter_list(self, page):
-        """ Scraping Modul (M1, M2, M3, dst) from RBV sidebar"""
-        log.log ("Scaning Chapter List....", "info")
-
-        try:
-            await page.wait_for_selector("a[href*='.pdf']", timeout=15000)
-            daftar_bab = await page.evaluate("""() => {
-            const links = Array.from(document.querySelectorAll("a[href*='doc'=]"));
-
-            return links.map(a => {
-                const url = new URL (a.href);
-                const doc = url.searchParams.get ("doc");
-
-                return {
-                    label: a.innerText.trim(),
-                    doc_id: doc
-                };
-            });
-        }""")
-        except:
-            return []
-
-        # Filter
-        clean_list = []
-        seen = set()
-        for bab in daftar_bab:
-            bid = bab['doc_id'].replace('.pdf', '')
-            if bid not in seen and "doc" not in bid and bid.strip() !="":
-                seen.add(bid)
-                clean_list.append({
-                    'label' : bab['label'],
-                    'id' : bid
-                })
-        return clean_list 
-    
     async def start(self, username=None, password=None, kode_mk=None, ):
         clear_screen()
         print("==========================================")
@@ -72,7 +38,7 @@ class RBVEngine:
         if not password:
             password = getpass("Password       : ")
         if not kode_mk:
-            kode_mk  = input("Kode MK (cth: DAPU6209): ").upper()
+            kode_mk  = input("Kode MK (e,g. : DAPU6209): ").upper()
 
         self.base_dir, self.temp_dir = prepare_directories(kode_mk)
 
@@ -111,12 +77,13 @@ class RBVEngine:
             log(f"Login to the modul: {kode_mk}...", "info")
             try:
                 await page.goto(f"https://pustaka.ut.ac.id/reader/index.php?modul={kode_mk}", timeout=60000)
-                chapters = await self.get_chapter_list(page)
+                chapters = await get_chapter_list(page)
             except Exception as e:
                 log.log(f"Error accessing page: {e}", "error")
             if not chapters:
-                log.log(f"Failed to read sidebar, using standard assumption mode (M1-M12)", "warn")
-                chapters = [{'id': f'M{i}', 'label': f'Modul {i}'} for i in range(1, 13)]
+                log.log(f"Failed to read sidebar", "warn")
+                await browser.close()
+                return
                 
             await browser.close()
             
@@ -136,28 +103,24 @@ class RBVEngine:
 
             # Parallel Download Logic
             concurrency = 5
-            max_pages_guess = 100
-            consecutive_errors = 0
+            page_num = 1
             total_download = 0
+            end_of_module = False
 
-            async def download_task(page_num):
-                return await downloader.download_page(doc_id, f"{kode_mk}/", page_num, bab_dir)
-
-            for i in range(1, max_pages_guess + 1, concurrency):
-                batch_indices = range(i, min(i + concurrency, max_pages_guess + 1))
-                tasks = [download_task(p) for p in batch_indices]
-
+            while not end_of_module:
+                batch_indices = range(page_num, page_num + concurrency)
+                tasks = [downloader.download_page(doc_id, f"{kode_mk}/", p, bab_dir) for p in batch_indices]
+                
                 results = await asyncio.gather(*tasks)
-
-                success_count = results.count(True)
-                total_downloaded += success_count
-
-                if success_count == 0:
-                    consecutive_errors += 1
-                else:
-                    consecutive_errors = 0
-                if consecutive_errors >= 2:
-                    break
+                
+                for r in results:
+                    if r:
+                        total_downloaded += 1
+                    else:
+                        end_of_module = True 
+                
+                page_num += concurrency
+            
             log.log(f" -> Downloaded {total_downloaded} pages.", "success")
 
         # PDF Compiling
