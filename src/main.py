@@ -8,29 +8,8 @@ import httpx
 import img2pdf
 from playwright.async_api import async_playwright
 
-try:
-    from utils.logger import Logger as log
-except ImportError:
-    class MockLog:
-        def log(self, text, type="info"):
-            icons = {
-                "info": "[*]",
-                "success": "[+]",
-                "error": "[-]",
-                "warn": "[!]"
-            }
-            icon = icons.get(type, "[?]")
-            print(f"[{icon}] {text}")
-    log = MockLog()
-try:
-    from utils.helper import clear_screen, prepare_directories, collect_images_recursive
-except ImportError:
-    def clear_screen():
-        pass
-    def prepare_directories():
-        return "output", "temp"
-    def collect_images_recursive():
-        return []
+from utils.logger import Logger as log
+from utils.helper import clear_screen, prepare_directories, collect_images_recursive
         
 try:
     from core.auth import RBVauth          # Engine Login SSO
@@ -49,9 +28,9 @@ class RBVEngine:
         """ Scraping Modul (M1, M2, M3, dst) from RBV sidebar"""
         log.log ("Scaning Chapter List....", "info")
 
-    try:
-        await page.wait_for_selector("a[href*='.pdf']", timeout=15000)
-        daftar_bar = await page.evaluate("""() => {
+        try:
+            await page.wait_for_selector("a[href*='.pdf']", timeout=15000)
+            daftar_bab = await page.evaluate("""() => {
             const links = Array.from(document.querySelectorAll("a[href*='doc'=]"));
 
             return links.map(a => {
@@ -64,18 +43,21 @@ class RBVEngine:
                 };
             });
         }""")
+        except:
+            return []
 
-    # Filter
-    clean_list = []
-    seen = set()
-    for bab in daftar_bab:
-        bid = bab['doc_id'].replace('.pdf', '')
-        if bid not in seen and "doc" not in bid and bid.strip() !="":
-            seen.add(bid)
-            clean_list.append({
-                'label' : bab['label'],
-                'id' : bid
-            })
+        # Filter
+        clean_list = []
+        seen = set()
+        for bab in daftar_bab:
+            bid = bab['doc_id'].replace('.pdf', '')
+            if bid not in seen and "doc" not in bid and bid.strip() !="":
+                seen.add(bid)
+                clean_list.append({
+                    'label' : bab['label'],
+                    'id' : bid
+                })
+        return clean_list 
     
     async def start(self, username=None, password=None, kode_mk=None, ):
         clear_screen()
@@ -136,7 +118,7 @@ class RBVEngine:
                 log.log(f"Error accessing page: {e}", "error")
             if not chapters:
                 log.log(f"Failed to read sidebar, using standard assumption mode (M1-M12)", "warn")
-                chapters = [{'id': f'M{i}', 'label': f'Modul {i}'} for i in range(1, 13)]chapters = [{}]
+                chapters = [{'id': f'M{i}', 'label': f'Modul {i}'} for i in range(1, 13)]
                 
             await browser.close()
             
@@ -146,37 +128,37 @@ class RBVEngine:
         downloader = RBVDownloader(self.cookies)
         downloader.resolution = "800" # HD
         
-            for id, bab in enumerate(chapters):
-                doc_id = bab['id']
-                log.log(f"\n Processing: {bab['label']} (ID: {doc_id})", "info")
+        for id, bab in enumerate(chapters):
+            doc_id = bab['id']
+            log.log(f"\n Processing: {bab['label']} (ID: {doc_id})", "info")
 
-                bab_dir = os.path.join(self.temp_dir, doc_id)
-                if not os.path.exists(bab_dir):
-                    os.makedirs(bab_dir)
+            bab_dir = os.path.join(self.temp_dir, doc_id)
+            if not os.path.exists(bab_dir):
+                os.makedirs(bab_dir)
 
-                # Parallel Download Logic
-                concurrency = 5
-                max_page_guess = 100
-                consecutive_errors = 0
-                total_download = 0
+            # Parallel Download Logic
+            concurrency = 5
+            max_pages_guess = 100
+            consecutive_errors = 0
+            total_download = 0
 
-                async def download_task(page_num):
-                    return await downloader.download_page(doc_id, f"{kode_mk}/", page_num, bab_dir)
+            async def download_task(page_num):
+                return await downloader.download_page(doc_id, f"{kode_mk}/", page_num, bab_dir)
 
-                for i in range(1, max_pages_guess + 1 concurrency):
-                    batch_indices = range(i, min(i + concurrency, max_pages_guess + 1))
-                    tasks = [download_task(p) for p in batch_indices]
+            for i in range(1, max_pages_guess + 1, concurrency):
+                batch_indices = range(i, min(i + concurrency, max_pages_guess + 1))
+                tasks = [download_task(p) for p in batch_indices]
 
                 results = await asyncio.gather(*tasks)
 
-                success_count = result.count(True)
+                success_count = results.count(True)
                 total_downloaded += success_count
 
                 if success_count == 0:
                     consecutive_errors += 1
                 else:
                     consecutive_errors = 0
-                if consecutive_error >= 2:
+                if consecutive_errors >= 2:
                     break
             log.log(f" -> Downloaded {total_downloaded} pages.", "success")
 
@@ -193,7 +175,7 @@ class RBVEngine:
 
                 try:
                     shutil.rmtree(self.temp_dir)
-                except
+                except:
                     pass
             except Exception as e:
                 log.log("PDF error: {e}", "error")
